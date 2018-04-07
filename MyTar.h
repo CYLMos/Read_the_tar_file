@@ -6,6 +6,7 @@
 #include <vector>
 #include <cmath>
 #include <iomanip>
+#include <cstdlib>
 
 using namespace std;
 
