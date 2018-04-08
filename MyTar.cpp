@@ -23,7 +23,7 @@ int MyTar::isUStar(){
     int fileSize = this->inputStream.tellg();
 
     /// If the file is not the mutiple of 512, the file is not USTAR format.
-    if(fileSize % this->usBlockSize == 0){
+    if(fileSize % MyTar::usBlockSize == 0){
         this->inputStream.seekg(257, ios::beg);
         char buffer[6];
 
@@ -53,17 +53,17 @@ int MyTar::startRead(){
     while(this->inputStream){
         struct TarHeader buffer;
 
-        if(this->inputStream.read((char*)&buffer, this->usBlockSize)){
+        if(this->inputStream.read((char*)&buffer, MyTar::usBlockSize)){
             this->tarVector.push_back(buffer);
 
-            int fileSize = this->hex2Dec(atoi(buffer.filesize));
+            int fileSize = this->hex2Dec(buffer.filesize, sizeof(buffer.filesize));
 
             /* After the header data is the content of the file in tar file.
              * So we need to ignore the block of the content.
              * jumpBock represents how many blocks we need to ignore.
              */
-            int jumpBlock = ceil((double)fileSize/this->usBlockSize);
-            this->inputStream.seekg(jumpBlock * this->usBlockSize, ios::cur);
+            int jumpBlock = ceil((double)fileSize/MyTar::usBlockSize);
+            this->inputStream.seekg(jumpBlock * MyTar::usBlockSize, ios::cur);
         }
     }
 
@@ -89,7 +89,8 @@ void MyTar::showContent(){
         cout << left << setw(32) << buffer.groupname;
 
         /// Output the file size.
-        cout << left << setw(6) << this->hex2Dec(atoi(buffer.filesize));
+        cout << left << setw(6) << this->hex2Dec(buffer.filesize, sizeof(buffer.filesize));
+        //cout << left << setw(6) << this->hex2Dec(atoi(buffer.filesize));
 
         /// Output the file name.
         cout << left << setw(100) << buffer.filename << endl;
@@ -174,16 +175,20 @@ string MyTar::getFileMode(int modeNum){
 }
 
 /// Change the value from hex to dec.
-int MyTar::hex2Dec(int num){
+int MyTar::hex2Dec(const char* sizeArray, int length){
     int n = 0;
     int ans = 0;
-    while(num > 0){
-        int remain = num % 10;
-        num /= 10;
-        ans += remain * pow(16, n);
 
-        n++;
+    /* i = length - 2 beacuse the last char in sizeArray is null.
+     * So we need to ignore it.
+     */
+    for(int i = length - 2; i > -1; i--){
+        int num = sizeArray[i] >= 'a' && sizeArray[i] <= 'f' ? sizeArray[i] - 'a' + 10 : sizeArray[i] - '0';
+
+        ans += num * pow(16, n);
+        ++n;
     }
 
+    /// return bytes, not bits.
     return ans /= 8;
 }

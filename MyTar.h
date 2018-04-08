@@ -54,7 +54,7 @@ private:
     int fileNum;   /// Store the number of the files in the tar file.
 
     string getFileMode(int);  /// Get the file mode of the file in the tar file.
-    int hex2Dec(int);  /// Change the value from hex to dec.
+    int hex2Dec(const char*, int);  /// Change the value from hex to dec.
 };
 
 #endif // MYTAR_H
