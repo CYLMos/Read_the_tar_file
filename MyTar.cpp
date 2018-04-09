@@ -23,7 +23,7 @@ int MyTar::isUStar(){
     int fileSize = this->inputStream.tellg();
 
     /// If the file is not the mutiple of 512, the file is not USTAR format.
-    if(fileSize % MyTar::usBlockSize == 0){
+    if(fileSize % this->usBlockSize == 0){
         this->inputStream.seekg(257, ios::beg);
         char buffer[6];
 
@@ -53,7 +53,7 @@ int MyTar::startRead(){
     while(this->inputStream){
         struct TarHeader buffer;
 
-        if(this->inputStream.read((char*)&buffer, MyTar::usBlockSize)){
+        if(this->inputStream.read((char*)&buffer, this->usBlockSize)){
             this->tarVector.push_back(buffer);
 
             int fileSize = this->hex2Dec(buffer.filesize, sizeof(buffer.filesize));
@@ -62,8 +62,8 @@ int MyTar::startRead(){
              * So we need to ignore the block of the content.
              * jumpBock represents how many blocks we need to ignore.
              */
-            int jumpBlock = ceil((double)fileSize/MyTar::usBlockSize);
-            this->inputStream.seekg(jumpBlock * MyTar::usBlockSize, ios::cur);
+            int jumpBlock = ceil((double)fileSize / (double)this->usBlockSize);
+            this->inputStream.seekg(jumpBlock * this->usBlockSize, ios::cur);
         }
     }
 
